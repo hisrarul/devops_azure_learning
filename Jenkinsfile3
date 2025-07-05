@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'display_username', defaultValue: '', description: 'Enter the display username to create')
+        string(name: 'nick_username', defaultValue: '', description: 'Enter the nick username to create')
+        string(name: 'domain', defaultValue: '@imrankhan7210yahoo.onmicrosoft.com', description: 'Enter the domain of the account.')
+    }
+    environment {
+        pipline_tenand_id     = credentials('JENKINS_CRED_TENANT_ID')
+        pipeline_client_id = credentials('JENKINS_CRED_CLIENT_ID')
+        pipeline_client_secret = credentials('JENKINS_CRED_CLIENT_SECRET')
+    }
+    stages {
+        stage('Creating Azure user') {
+            steps {
+                withCredentials([string(credentialsId: 'JENKINS_CRED_CLIENT_SECRET', variable: 'pipeline_client_secret')]) {
+                    sh '''
+                        export tenant_id=${pipline_tenand_id}
+                        export client_id=${pipeline_client_id}
+                        export client_secret=${pipeline_client_secret}
+                        
+                        echo "Client Secret: $client_secret"
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip3 install azure-identity msgraph-sdk
+                        python3 microsoft_entra_id/user/create_user3.py -dn "${display_username}" -nn "${nick_username}" -d "${domain}"
+                    '''
+                }
+            }
+        }
+    }
+}
